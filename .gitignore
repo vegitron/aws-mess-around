@@ -55,3 +55,22 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Vim
+*.swp
+*.swo
+
+# virtualenv
+/bin
+/local
+/lib
+/include
+
+# django project...
+/project
+/manage.py
+
+# installing from pip
+pip-selfcheck.json
+
+
