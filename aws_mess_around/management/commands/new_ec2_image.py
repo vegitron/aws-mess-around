@@ -10,6 +10,7 @@ import subprocess
 # on the 2 final hosts.
 
 
+MY_AMI_NAME = getattr(settings, "AWS_CUSTOM_AMI_NAME", "pmichaud test image")
 AMAZON_LINUX = 'ami-d93622b8'
 
 TESTING_ACCESS = [
@@ -38,12 +39,12 @@ class Command(BaseCommand):
         except Exception as ex:
             print ex
             print "Failed to launch"
-        # take_down_ec2(session, region_name)
-        # List all of my EC2 instances in my default region.
+        take_down_ec2(session, region_name)
 
 
 def launch_ec2(session, region_name):
     ec2_client = session.client('ec2')
+    ec2_region = session.resource('ec2', region_name=region_name)
 
     my_security_group = settings.AWS_SECURITY_GROUP_NAME
     security_groups = ec2_client.describe_security_groups()
@@ -75,6 +76,13 @@ def launch_ec2(session, region_name):
     new_id = None
     for instance in response["Instances"]:
         new_id = instance["InstanceId"]
+        i_obj = ec2_region.Instance(new_id)
+        i_obj.create_tags(Tags=[{'Key': 'project',
+                                 'Value': 'aws-initial-testing',
+                                 },
+                                {'Key': 'service-level',
+                                 'Value': 'messing-around',
+                                 }])
         ids.append(new_id)
 
     # Wait for it to be running...
@@ -91,7 +99,6 @@ def launch_ec2(session, region_name):
     insecure_env = dict(os.environ, ANSIBLE_HOST_KEY_CHECKING='False')
 
     new_ami_id = None
-    ec2_region = session.resource('ec2', region_name=region_name)
     for instance in ec2_region.instances.all():
         instance_id = instance.id
 
@@ -142,13 +149,31 @@ def launch_ec2(session, region_name):
 
             print "Done waiting.  Building an image"
 
-            image = instance.create_image(Name="pmichaud test image")
+            # Remove any ami that already exists with our name.
+            try:
+                name_filter = [{'Name': 'name',
+                                'Values': [MY_AMI_NAME]}]
+
+                images = ec2_client.describe_images(Filters=name_filter)
+                image_id = images["Images"][0]["ImageId"]
+                ec2_client.deregister_image(ImageId=image_id)
+            except Exception as ex:
+                print "Error deregistring ami: ", ex
+
+            image = instance.create_image(Name=MY_AMI_NAME)
+            new_ami_id = image.id
+            ami = ec2_region.Image(new_ami_id)
+            ami.create_tags(Tags=[{'Key': 'project',
+                                   'Value': 'aws-initial-testing',
+                                   },
+                                  {'Key': 'service-level',
+                                   'Value': 'messing-around',
+                                   }])
 
             print "I (waiting...): ", image
             waiter = ec2_client.get_waiter('image_available')
-            waiter.wait(ImageIds=[image.id])
+            waiter.wait(ImageIds=[new_ami_id])
 
-            new_ami_id = image.id
             print "Done waiting for image"
 
     print "Launching 2 new instances with our AMI"
@@ -162,6 +187,14 @@ def launch_ec2(session, region_name):
     fresh_ami_instance_ids = []
     for instance in response["Instances"]:
         new_id = instance["InstanceId"]
+        i_obj = ec2_region.Instance(new_id)
+        i_obj.create_tags(Tags=[{'Key': 'project',
+                                 'Value': 'aws-initial-testing',
+                                 },
+                                {'Key': 'service-level',
+                                 'Value': 'messing-around',
+                                 }])
+
         fresh_ami_instance_ids.append(new_id)
 
     print "Waiting for run...", ids
