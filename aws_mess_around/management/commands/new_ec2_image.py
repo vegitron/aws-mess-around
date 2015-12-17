@@ -11,7 +11,9 @@ import subprocess
 
 
 MY_AMI_NAME = getattr(settings, "AWS_CUSTOM_AMI_NAME", "pmichaud test image")
-AMAZON_LINUX = 'ami-d93622b8'
+UBUNTU_LTS = 'ami-e54f5f84'
+ansible_files_path = getattr(settings, "AWS_DEPLOY_ANSIBLE_FILES_PATH",
+                             "~/ansible/aca-aws-files")
 
 TESTING_ACCESS = [
     {"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22,
@@ -39,7 +41,7 @@ class Command(BaseCommand):
         except Exception as ex:
             print ex
             print "Failed to launch"
-        take_down_ec2(session, region_name)
+        #take_down_ec2(session, region_name)
 
 
 def launch_ec2(session, region_name):
@@ -65,7 +67,7 @@ def launch_ec2(session, region_name):
                                                 IpPermissions=TESTING_ACCESS)
 
     # Launch a vanilla amazon linux ami
-    response = ec2_client.run_instances(ImageId=AMAZON_LINUX,
+    response = ec2_client.run_instances(ImageId=UBUNTU_LTS,
                                         MinCount=1,
                                         KeyName=settings.AWS_KEY_NAME,
                                         MaxCount=1,
@@ -91,12 +93,14 @@ def launch_ec2(session, region_name):
     waiter.wait(InstanceIds=ids)
     print "Done waiting"
 
-    ansible_cmd = ("ansible-playbook -i '%s,' -u  ec2-user "
+    ansible_cmd = ("ansible-playbook -i '%s,' -u  ubuntu "
                    "aws_mess_around/playbooks/basics.yml -vvvvv")
     ssh_test_cmd = ("ssh -o UserKnownHostsFile=/dev/null -o "
-                    "StrictHostKeyChecking=no ec2-user@%s -C 'ls /'")
+                    "StrictHostKeyChecking=no ubuntu@%s -C 'ls /'")
 
-    insecure_env = dict(os.environ, ANSIBLE_HOST_KEY_CHECKING='False')
+    insecure_env = dict(os.environ,
+                        ANSIBLE_HOST_KEY_CHECKING='False',
+                        ANSIBLE_FILES=ansible_files_path)
 
     new_ami_id = None
     for instance in ec2_region.instances.all():
@@ -141,6 +145,9 @@ def launch_ec2(session, region_name):
                 print ex.output
                 return
             print "O: ", output
+
+            print "CMD: ", cmd
+            return
 
             print "Stopping the existing instance, to image it"
             ec2_client.stop_instances(InstanceIds=[new_id])

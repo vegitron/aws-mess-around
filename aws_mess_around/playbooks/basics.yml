@@ -1,17 +1,37 @@
 - hosts: all
   sudo: yes
+  vars:
+    files_dir: "{{ lookup('env', 'ANSIBLE_FILES')|default('/data/ansible/aca-builds/files', true) }}"
+
   tasks:
     - name: upgrade all packages
-      yum: name=* state=latest
+      apt: update_cache=yes
+      apt: upgrade=yes
 
     - name: install the current apache
-      yum: name=httpd state=latest
+      apt: name=apache2 state=latest
+    - apt: name=libapache2-mod-shib2 state=latest
+    - apt: name=libapache2-mod-wsgi state=latest
 
     - name: Basic hello page
       template: src="templates/demo_page.html" dest="/var/www/html/index.html" mode="644"
 
-    - name: Have Apache start on boot
-      action: command /sbin/chkconfig httpd on
+    - name: enable apache modules
+      command: a2enmod ssl
+    - command: a2enmod wsgi
+
+    - name: send out our custom apache configuration
+      template: src="templates/apache/apache_config.conf" dest="/etc/apache2/sites-available/custom-apache-config.conf"
+
+    - name: send out our certificate
+      copy: src="{{ files_dir }}/certs/aca_aws.uwca.cert" dest="/etc/ssl/certs/aca_aws.uwca.cert" mode="0600"
+    - copy: src="{{ files_dir }}/certs/aca_aws.key" dest="/etc/ssl/private/aca_aws.key" mode="0600"
+
+    - name: enable our custom site configuration
+      command: a2ensite custom-apache-config
+
+    - name: disable the default site configuration
+      command: a2dissite 000-default
 
     - name: Restarting Apache
-      service: name=httpd state=restarted
+      service: name=apache2 state=restarted
