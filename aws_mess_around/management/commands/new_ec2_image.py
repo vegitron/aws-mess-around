@@ -14,6 +14,7 @@ MY_AMI_NAME = getattr(settings, "AWS_CUSTOM_AMI_NAME", "pmichaud test image")
 UBUNTU_LTS = 'ami-e54f5f84'
 ansible_files_path = getattr(settings, "AWS_DEPLOY_ANSIBLE_FILES_PATH",
                              "~/ansible/aca-aws-files")
+NEW_DOMAIN_NAME = "ami-test3.aca-aws.s.uw.edu"
 
 TESTING_ACCESS = [
     {"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22,
@@ -41,7 +42,7 @@ class Command(BaseCommand):
         except Exception as ex:
             print ex
             print "Failed to launch"
-        #take_down_ec2(session, region_name)
+        take_down_ec2(session, region_name)
 
 
 def launch_ec2(session, region_name):
@@ -100,7 +101,8 @@ def launch_ec2(session, region_name):
 
     insecure_env = dict(os.environ,
                         ANSIBLE_HOST_KEY_CHECKING='False',
-                        ANSIBLE_FILES=ansible_files_path)
+                        ANSIBLE_FILES=ansible_files_path,
+                        ANSIBLE_SERVICE_DOMAIN=NEW_DOMAIN_NAME)
 
     new_ami_id = None
     for instance in ec2_region.instances.all():

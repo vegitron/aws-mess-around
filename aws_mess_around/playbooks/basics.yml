@@ -2,6 +2,7 @@
   sudo: yes
   vars:
     files_dir: "{{ lookup('env', 'ANSIBLE_FILES')|default('/data/ansible/aca-builds/files', true) }}"
+    service_domain: "{{ lookup('env', 'ANSIBLE_SERVICE_DOMAIN') }}"
 
   tasks:
     - name: upgrade all packages
@@ -19,6 +20,7 @@
     - name: enable apache modules
       command: a2enmod ssl
     - command: a2enmod wsgi
+    - command: a2enmod shib2
 
     - name: send out our custom apache configuration
       template: src="templates/apache/apache_config.conf" dest="/etc/apache2/sites-available/custom-apache-config.conf"
@@ -34,6 +36,14 @@
 
     - name: disable the default site configuration
       command: a2dissite 000-default
+
+    - name: configure shib
+      template: src="templates/shibboleth/shibboleth2.xml" dest="/etc/shibboleth/shibboleth2.xml"
+
+    - name: create backing directory for shibboleth data
+      file: mode="2775" state="directory" path="/var/shibboleth/"
+    - file: mode="2775" state="directory" path="/var/shibboleth/backing_files/"
+    - service: name=shibd state=restarted
 
     - name: Restarting Apache
       service: name=apache2 state=restarted
