@@ -14,7 +14,7 @@ MY_AMI_NAME = getattr(settings, "AWS_CUSTOM_AMI_NAME", "pmichaud test image")
 UBUNTU_LTS = 'ami-e54f5f84'
 ansible_files_path = getattr(settings, "AWS_DEPLOY_ANSIBLE_FILES_PATH",
                              "~/ansible/aca-aws-files")
-NEW_DOMAIN_NAME = "ami-test3.aca-aws.s.uw.edu"
+NEW_DOMAIN_NAME = "ami-test3.aca-aws.s.uw.edu."
 
 TESTING_ACCESS = [
     {"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22,
@@ -42,7 +42,7 @@ class Command(BaseCommand):
         except Exception as ex:
             print ex
             print "Failed to launch"
-        take_down_ec2(session, region_name)
+        # take_down_ec2(session, region_name)
 
 
 def launch_ec2(session, region_name):
@@ -194,9 +194,13 @@ def launch_ec2(session, region_name):
                                         )
 
     fresh_ami_instance_ids = []
+    public_ips = []
     for instance in response["Instances"]:
         new_id = instance["InstanceId"]
         i_obj = ec2_region.Instance(new_id)
+
+        print i_obj.public_ip_address
+        public_ipds.append(i_obj.public_ip_address)
         i_obj.create_tags(Tags=[{'Key': 'project',
                                  'Value': 'aws-initial-testing',
                                  },
@@ -210,6 +214,40 @@ def launch_ec2(session, region_name):
     waiter = ec2_client.get_waiter('instance_running')
     waiter.wait(InstanceIds=fresh_ami_instance_ids)
     print "Done waiting"
+
+    # This isn't tested in this context, but did work standalone!
+    r53_client = session.client('route53')
+
+    my_zone = None
+    for zone in r53_client.list_hosted_zones()['HostedZones']:
+        if "aca-aws.s.uw.edu." == zone["Name"]:
+            my_zone = zone
+
+    zone_id = my_zone["Id"].replace('/hostedzone/', '')
+
+    records = []
+    for ip in public_ips:
+        records.append({"Value": ip})
+
+    data = {"Comment": "ACA-AWS Automation",
+            "Changes": [{"Action": "UPSERT",
+                         "ResourceRecordSet": {"Name": NEW_DOMAIN_NAME,
+                                               "Type": "A",
+                                               "TTL": 10,
+                                               "ResourceRecords": records
+                                               }
+                         }
+                        ]
+            }
+
+    response = r53_client.change_resource_record_sets(HostedZoneId=zone_id,
+                                                      ChangeBatch=data)
+
+    print response
+    print "Waiting on DNS..."
+    waiter = r53_client.get_waiter('resource_record_sets_changed')
+    waiter.wait(Id=response["ChangeInfo"]["Id"])
+    print "Done!"
 
     print "All running instances: "
     for instance in ec2_region.instances.all():
