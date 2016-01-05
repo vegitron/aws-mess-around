@@ -45,6 +45,7 @@ class Command(BaseCommand):
             print "Failed to launch"
         # take_down_ec2(session, region_name)
 
+
 def create_vpc(session, region_name):
     ec2_client = session.client('ec2')
     ec2_region = session.resource('ec2', region_name=region_name)
