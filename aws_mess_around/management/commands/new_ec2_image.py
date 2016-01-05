@@ -38,11 +38,65 @@ class Command(BaseCommand):
                           region_name=region_name)
 
         try:
-            launch_ec2(session, region_name)
+            create_vpc(session, region_name)
+#            launch_ec2(session, region_name)
         except Exception as ex:
             print ex
             print "Failed to launch"
         # take_down_ec2(session, region_name)
+
+def create_vpc(session, region_name):
+    ec2_client = session.client('ec2')
+    ec2_region = session.resource('ec2', region_name=region_name)
+
+    valid_service_levels = {"production": True,
+                            "test": True,
+                            "build": True
+                            }
+
+    existing_service_levels = {}
+    # Get VPCs without a tag.  Delete any VPC without a tag that isn't default.
+    for vpc in ec2_region.vpcs.all():
+        if vpc.is_default:
+            continue
+
+        print "V: ", vpc, vpc.tags
+        if vpc.tags is None:
+            vpc.delete()
+
+        service_level = None
+        for tag in vpc.tags:
+            if "service-level" == tag["Key"]:
+                service_level = tag["Value"]
+
+        is_valid = valid_service_levels.get(service_level, False)
+
+        if not is_valid:
+            vpc.delete()
+
+        existing_service_levels[service_level] = True
+
+    for level in valid_service_levels:
+
+        if existing_service_levels.get(level, False):
+            continue
+
+        print "Creating VPC with service level %s" % level
+        res = ec2_client.create_vpc(CidrBlock='10.0.0.0/24')
+        print res
+        print "Waiting..."
+        vpc_id = res["Vpc"]["VpcId"]
+        waiter = ec2_client.get_waiter('vpc_available')
+        waiter.wait(VpcIds=[vpc_id])
+        print "Done"
+
+        print "Tagging:"
+        vpc = ec2_region.Vpc(vpc_id)
+        vpc.create_tags(Tags=[{'Key': 'service-level',
+                               'Value': level,
+                               }])
+
+    print "Done"
 
 
 def launch_ec2(session, region_name):
