@@ -57,5 +57,3 @@ def manage_vpcs(c):
         vpc.create_tags(Tags=[{'Key': 'service-level',
                                'Value': level,
                                }])
-
-

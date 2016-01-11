@@ -68,7 +68,6 @@ def launch_ec2(c):
                                      [new_id],
                                      extra_env)
 
-
     new_ami_id = create_ami_from_instance(c, new_id, MY_AMI_NAME, tags)
     print "New ami id: ", new_ami_id
 
@@ -78,7 +77,6 @@ def launch_ec2(c):
     for new_id in new_ids:
         instance = ec2_region.Instance(new_id)
         public_ips.append(instance.public_ip_address)
-
 
     set_v4_ips_for_domain(c, NEW_DOMAIN_NAME, public_ips)
 

@@ -2,6 +2,7 @@ from django.shortcuts import render_to_response
 from django.conf import settings
 from github import Github
 
+
 def home(request):
     data = {
         "has_github": False

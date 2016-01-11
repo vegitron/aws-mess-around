@@ -69,4 +69,3 @@ def wait_for_ssh(ec2_instance):
             print ex.output
 
     print "Took %s tries: " % counter
-
