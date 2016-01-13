@@ -1,0 +1,20 @@
+- hosts: all
+  sudo: yes
+  vars:
+    root_password: "{{ lookup('env', 'ANSIBLE_MYSQL_SLAVE_PASSWORD') }}"
+    replication_password: "{{ lookup('env', 'ANSIBLE_MYSQL_REPL_PASSWORD') }}"
+    master_host: "{{ lookup('env', 'ANSIBLE_MYSQL_MASTER_IP') }}"
+
+  tasks:
+    - debug: "Login: {{ master_host }} - repl -- {{ replication_password }}"
+    - mysql_replication: mode=getmaster login_host={{ master_host }} login_user="repl" login_password={{ replication_password }}
+      register: replication_status
+
+    - name: Print Master Status
+      debug: var=replication_status
+
+    - mysql_replication: mode=stopslave login_user="root" login_password={{ root_password }}
+      ignore_errors: yes
+
+    - mysql_replication: mode=changemaster master_host={{ master_host }} master_log_file={{ replication_status.File }} master_log_pos={{ replication_status.Position }} master_user="repl" master_password={{ replication_password }} login_user="root" login_password={{ root_password }} login_host="localhost"
+    - mysql_replication: mode=startslave login_user="root" login_password={{ root_password }}

@@ -1,0 +1,11 @@
+- hosts: all
+  sudo: yes
+  vars:
+    root_password: "{{ lookup('env', 'ANSIBLE_MYSQL_MASTER_PASSWORD') }}"
+    replication_password: "{{ lookup('env', 'ANSIBLE_MYSQL_REPL_PASSWORD') }}"
+    slave_host: "{{ lookup('env', 'ANSIBLE_MYSQL_SLAVE_IP') }}"
+
+  tasks:
+    - name: Adding user for replication
+      mysql_user: name=repl host={{ slave_host }} password={{ replication_password }} login_user=root login_password={{root_password}} priv=*.*:"SELECT,REPLICATION CLIENT,REPLICATION SLAVE"
+

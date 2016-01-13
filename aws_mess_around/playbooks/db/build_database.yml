@@ -1,0 +1,30 @@
+- hosts: all
+  sudo: yes
+  vars:
+    root_password: "{{ lookup('env', 'ANSIBLE_MYSQL_ROOT') }}"
+    mysql_server_id: "{{ lookup('env', 'ANSIBLE_MYSQL_SERVER_ID') }}"
+
+  tasks:
+    - debug: "Password: {{ root_password }}"
+    - debug: "Ansible host: {{ ansible_hostname }}"
+    - name: upgrade all packages
+      apt: update_cache=yes
+      apt: upgrade=yes
+
+    - name: install mysql 5.5
+      apt: name=mysql-server-5.5 state=latest
+
+    - name: install python mysql libraries
+      apt: name=python-mysqldb state=latest
+    - name: Setting root password
+      mysql_user: name=root host={{ item }} password={{ root_password }}
+      with_items:
+        - "{{ ansible_hostname }}"
+        - ::1
+        - 127.0.0.1
+        - localhost
+
+    - name: MySQL Configuration
+      template: src="templates/mysql/my.cnf" dest="/etc/mysql/my.cnf" mode="644"
+
+    - service: name=mysql state=restarted

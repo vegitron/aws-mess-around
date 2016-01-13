@@ -4,6 +4,7 @@ import os
 from django.core.management.base import BaseCommand
 from django.conf import settings
 import subprocess
+from aws_mess_around.management.commands import take_down_ec2
 from aws_mess_around.util.aws import get_context
 from aws_mess_around.util.vpc import manage_vpcs
 from aws_mess_around.util.ec2 import manage_web_security_group
@@ -86,26 +87,3 @@ def launch_ec2(c):
         print "ID: ", instance_id
         print instance.public_dns_name
         print instance.key_name
-
-
-def take_down_ec2(c):
-    session = c["session"]
-    region_name = c["region_name"]
-    print('My region:')
-    my_security_group = settings.AWS_SECURITY_GROUP_NAME
-    ec2_region = session.resource('ec2', region_name=region_name)
-    ec2_client = session.client('ec2')
-    terminate_ids = []
-    for instance in ec2_region.instances.all():
-        print(instance.id)
-        print instance.security_groups
-        for group in instance.security_groups:
-            name = group["GroupName"]
-            if name == my_security_group:
-                terminate_ids.append(instance.id)
-                ec2_client.terminate_instances(InstanceIds=[instance.id])
-
-    print "Waiting for termination...", terminate_ids
-    waiter = ec2_client.get_waiter('instance_terminated')
-    waiter.wait(InstanceIds=terminate_ids)
-    print "Done waiting"

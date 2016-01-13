@@ -5,7 +5,7 @@ import subprocess
 
 
 def run_playbook_on_instances_by_ids(c, playbook, instance_ids, env={}):
-    ansible_cmd = "ansible-playbook -i '%s,' -u  ubuntu %s -vvvv"
+    ansible_cmd = "ansible-playbook -i '%s,' -u  ubuntu %s -vvvvvv"
 
     ansible_files_path = getattr(settings, "AWS_DEPLOY_ANSIBLE_FILES_PATH",
                                  "~/ansible/aca-aws-files")
@@ -42,11 +42,15 @@ def run_playbook_on_instances_by_ids(c, playbook, instance_ids, env={}):
             # Use ansible to configure the host.  In this case. just installing
             # apache, getting it to run on boot, and changing the index page.
             cmd = ansible_cmd % (instance.public_dns_name, playbook)
-            output = subprocess.check_output(cmd,
-                                             shell=True,
-                                             env=insecure_env,
-                                             )
-            print "O: ", output
+            try:
+                output = subprocess.check_output(cmd,
+                                                 shell=True,
+                                                 stderr=subprocess.PIPE,
+                                                 env=insecure_env,
+                                                 )
+                print "O: ", output
+            except subprocess.CalledProcessError as exc:
+                print "Failed: ", exc.output.replace("\\n", "\n")
 
 
 def wait_for_ssh(ec2_instance):
@@ -63,7 +67,6 @@ def wait_for_ssh(ec2_instance):
         c1 = ssh_test_cmd % ec2_instance.public_dns_name
         try:
             output = subprocess.check_output(c1, shell=True)
-            print "O: ", output
             break
         except subprocess.CalledProcessError as ex:
             print ex.output
