@@ -1,0 +1,24 @@
+- hosts: all
+  sudo: yes
+  vars:
+    files_dir: "{{ lookup('env', 'ANSIBLE_FILES')|default('/data/ansible/aca-builds/files', true) }}"
+
+  tasks:
+    - name: upgrade all packages
+      apt: update_cache=yes
+      apt: upgrade=yes
+
+    - name: Install nginx
+      apt: name=nginx state=latest
+
+    - name: send out our certificate
+      copy: src="{{ files_dir }}/certs/aca_aws.uwca.cert" dest="/etc/ssl/certs/aca_aws.uwca.cert" mode="0600"
+    - copy: src="{{ files_dir }}/certs/aca_aws.incommon.cert" dest="/etc/ssl/certs/aca_aws.incommon.cert" mode="0600"
+    - copy: src="{{ files_dir }}/certs/aca_aws.key" dest="/etc/ssl/private/aca_aws.key" mode="0600"
+    - copy: src="{{ files_dir }}/certs/incommon.ca.cert" dest="/etc/ssl/certs/incommon.ca.cert" mode="0600"
+
+    - name: send out our baseline nginx configuration
+      template: src="templates/nginx_basic_config.conf" dest="/etc/nginx/sites-enabled/default"
+
+    - name: restart nginx
+      service: name=nginx state=restarted

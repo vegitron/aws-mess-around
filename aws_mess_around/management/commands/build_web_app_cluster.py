@@ -8,16 +8,15 @@ from aws_mess_around.management.commands import take_down_ec2
 from aws_mess_around.util.aws import get_context
 from aws_mess_around.util.vpc import manage_vpcs
 from aws_mess_around.util.ec2 import manage_web_security_group
-from aws_mess_around.util.ec2 import launch_base_image, launch_ami
-from aws_mess_around.util.ec2 import create_ami_from_instance
-from aws_mess_around.util.ansible import run_playbook_on_instances_by_ids
+from aws_mess_around.util.web_app import create_webapp_instances
 from aws_mess_around.util.r53 import set_v4_ips_for_domain
+from aws_mess_around.util.proxy import create_proxy_instances
+from aws_mess_around.util.proxy import set_app_servers_for_proxies_by_id
 
 # A test run of this took 7 minutes, 14 seconds.  And Apache wasn't yet running
 # on the 2 final hosts.
 
 
-MY_AMI_NAME = getattr(settings, "AWS_CUSTOM_AMI_NAME", "pmichaud test image")
 NEW_DOMAIN_NAME = getattr(settings, "AWS_NEW_DOMAIN_NAME",
                           "ami-test6.aca-aws.s.uw.edu")
 
@@ -52,31 +51,20 @@ def launch_ec2(c):
     except Exception as ex:
         print "Error managing security group: ", ex
 
-    # Launch a vanilla amazon linux ami
-
     tags = {"project": "aws-initial-testing",
             "service-level": "messing-around"}
-    ec2_ids = launch_base_image(c, 1, [my_security_group], tags)
 
-    print "New ID: ", ec2_ids
+    instance_ids = create_webapp_instances(c, 2, NEW_DOMAIN_NAME,
+                                           [my_security_group], tags)
 
-    new_id = ec2_ids[0]
+    instance_ids = ['i-db5a6002', 'i-fd5a6024']
+    proxy_ids = create_proxy_instances(c, NEW_DOMAIN_NAME, 1,
+                                       [my_security_group], tags)
 
-    new_ami_id = None
-
-    extra_env = {"ANSIBLE_SERVICE_DOMAIN": NEW_DOMAIN_NAME}
-    run_playbook_on_instances_by_ids(c,
-                                     "aws_mess_around/playbooks/basics.yml",
-                                     [new_id],
-                                     extra_env)
-
-    new_ami_id = create_ami_from_instance(c, new_id, MY_AMI_NAME, tags)
-    print "New ami id: ", new_ami_id
-
-    new_ids = launch_ami(c, new_ami_id, 2, [my_security_group], tags)
+    set_app_servers_for_proxies_by_id(c, proxy_ids, instance_ids)
 
     public_ips = []
-    for new_id in new_ids:
+    for new_id in proxy_ids:
         instance = ec2_region.Instance(new_id)
         public_ips.append(instance.public_ip_address)
 
