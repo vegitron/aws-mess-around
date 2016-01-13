@@ -23,6 +23,7 @@ def create_db_instance(c, security_groups, tags, server_id):
 
     return ec2_ids[0], password
 
+
 def add_slave_to_master_by_ids(c, master_id, master_pwd, slave_id, slave_pwd):
     """
     Add the mysql host at host slave_id as a replication slave to the mysql
@@ -65,13 +66,13 @@ def add_slave_to_master_by_ids(c, master_id, master_pwd, slave_id, slave_pwd):
            "ANSIBLE_MYSQL_MASTER_IP": master.private_ip_address,
            }
 
-
     # Read the master status, and connect
     slave_playbook = "aws_mess_around/playbooks/db/join_master.yml"
     run_playbook_on_instances_by_ids(c,
                                      slave_playbook,
                                      [slave_id],
                                      env)
+
 
 def generate_password(length=50):
     chars = "".join([string.digits,
@@ -82,4 +83,3 @@ def generate_password(length=50):
     password = ''.join([random.SystemRandom().choice(chars) for i in range(l)])
 
     return password
-

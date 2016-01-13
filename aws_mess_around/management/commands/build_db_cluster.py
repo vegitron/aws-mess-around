@@ -10,6 +10,7 @@ MASTER_SERVER_ID = 200
 SLAVE1_SERVER_ID = 201
 SLAVE2_SERVER_ID = 202
 
+
 class Command(BaseCommand):
     help = "Makes a 3 node mysql cluster w/ statement level replication"
 
@@ -50,4 +51,3 @@ class Command(BaseCommand):
         # Connect the slavces to the master
         add_slave_to_master_by_ids(c, master_id, master_pwd, s1_id, s1_pwd)
         add_slave_to_master_by_ids(c, master_id, master_pwd, s2_id, s2_pwd)
-
