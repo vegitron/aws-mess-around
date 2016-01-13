@@ -18,7 +18,8 @@ from aws_mess_around.util.r53 import set_v4_ips_for_domain
 
 
 MY_AMI_NAME = getattr(settings, "AWS_CUSTOM_AMI_NAME", "pmichaud test image")
-NEW_DOMAIN_NAME = "ami-test3.aca-aws.s.uw.edu."
+NEW_DOMAIN_NAME = getattr(settings, "AWS_NEW_DOMAIN_NAME",
+                          "ami-test6.aca-aws.s.uw.edu")
 
 
 class Command(BaseCommand):
