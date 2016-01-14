@@ -1,0 +1,14 @@
+- hosts: all
+  sudo: yes
+  vars:
+    files_dir: "{{ lookup('env', 'ANSIBLE_FILES')|default('/data/ansible/aca-builds/files', true) }}"
+
+  tasks:
+    - debug: "app servers: {{ item }}"
+      with_items: app_servers
+
+    - name: send out our nginx configuration
+      template: src="templates/nginx_config.conf" dest="/etc/nginx/sites-enabled/default"
+
+    - name: restart nginx
+      service: name=nginx state=reloaded

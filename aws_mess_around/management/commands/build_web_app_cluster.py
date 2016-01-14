@@ -57,11 +57,11 @@ def launch_ec2(c):
     instance_ids = create_webapp_instances(c, 2, NEW_DOMAIN_NAME,
                                            [my_security_group], tags)
 
-    instance_ids = ['i-db5a6002', 'i-fd5a6024']
     proxy_ids = create_proxy_instances(c, NEW_DOMAIN_NAME, 1,
                                        [my_security_group], tags)
 
-    set_app_servers_for_proxies_by_id(c, proxy_ids, instance_ids)
+    set_app_servers_for_proxies_by_id(c, NEW_DOMAIN_NAME, proxy_ids,
+                                      instance_ids)
 
     public_ips = []
     for new_id in proxy_ids:
