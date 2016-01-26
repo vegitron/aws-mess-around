@@ -51,8 +51,8 @@ def launch_ec2(c):
     except Exception as ex:
         print "Error managing security group: ", ex
 
-    tags = {"project": "aws-initial-testing",
-            "service-level": "messing-around"}
+    tags = {"Project": "aws-initial-testing",
+            "Use": "messing-around"}
 
     instance_ids = create_webapp_instances(c, 2, NEW_DOMAIN_NAME,
                                            [my_security_group], tags)

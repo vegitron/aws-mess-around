@@ -1,0 +1,5 @@
+- hosts: all
+  tasks:
+   - name: "Adding database {{ database }}"
+     mysql_db: name={{ database }} state=present login_user=root login_password={{ root_password }}
+

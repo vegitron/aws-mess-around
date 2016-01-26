@@ -4,7 +4,7 @@ from aws_mess_around.util.ansible import run_playbook_on_instances_by_ids
 
 
 def create_proxy_instances(c, domain, count, security_groups, tags):
-    tags["service-role"] = "reverse-proxy"
+    tags["Role"] = "reverse-proxy"
     ec2_ids = launch_base_image(c, count, security_groups, tags)
 
     playbook = "aws_mess_around/playbooks/proxy/build_proxy.yml"

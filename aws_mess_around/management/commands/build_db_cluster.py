@@ -12,8 +12,8 @@ class Command(BaseCommand):
         c = get_context()
         take_down_ec2(c)
 
-        tags = {"project": "aws-initial-testing",
-                "service-level": "messing-around",
+        tags = {"Project": "aws-initial-testing",
+                "Use": "messing-around",
                 }
 
         my_security_group = settings.AWS_SECURITY_GROUP_NAME

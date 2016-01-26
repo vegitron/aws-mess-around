@@ -7,7 +7,7 @@ MY_AMI_NAME = getattr(settings, "AWS_CUSTOM_AMI_NAME", "pmichaud test image")
 
 
 def create_webapp_instances(c, count, domain, security_groups, tags):
-    tags["service-role"] = "app-server"
+    tags["Role"] = "app-server"
 
     # Launch a vanilla amazon linux ami
     ec2_ids = launch_base_image(c, 1, security_groups, tags)

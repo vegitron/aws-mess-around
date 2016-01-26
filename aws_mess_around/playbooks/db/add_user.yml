@@ -1,0 +1,5 @@
+- hosts: all
+  tasks:
+   - name: "Adding user {{ user }}@{{ host}}"
+     mysql_user: name={{ user }} host={{ host }} password={{ password }} priv="{{ database }}.*:ALL" login_user=root login_password={{ root_password }}
+
