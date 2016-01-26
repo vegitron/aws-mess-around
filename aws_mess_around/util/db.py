@@ -4,6 +4,40 @@ from aws_mess_around.util.ec2 import launch_base_image
 from aws_mess_around.util.ansible import run_playbook_on_instances_by_ids
 
 
+def create_new_db_cluster(c, security_groups, tags):
+    # Arbitrary initial values.  Should be considered when we start
+    # dynamically adding new db servers.
+    MASTER_SERVER_ID = 100
+    SLAVE1_SERVER_ID = 101
+    SLAVE2_SERVER_ID = 102
+
+    # Create a master db...
+    instance_id, pwd = create_db_instance(c, security_groups, tags,
+                                          MASTER_SERVER_ID)
+    master_pwd = pwd
+    master_id = instance_id
+
+    # Create 2 slave dbs...
+    instance_id, pwd = create_db_instance(c, security_groups, tags,
+                                          SLAVE1_SERVER_ID)
+    s1_pwd = pwd
+    s1_id = instance_id
+
+    instance_id, pwd = create_db_instance(c, security_groups, tags,
+                                          SLAVE2_SERVER_ID)
+    s2_pwd = pwd
+    s2_id = instance_id
+
+    # Connect the slavces to the master
+    add_slave_to_master_by_ids(c, master_id, master_pwd, s1_id, s1_pwd)
+    add_slave_to_master_by_ids(c, master_id, master_pwd, s2_id, s2_pwd)
+
+    return {"master": {"id": master_id, "password": master_pwd},
+            "slave1": {"id": s1_id, "password": s1_pwd},
+            "slave2": {"id": s2_id, "password": s2_pwd},
+            }
+
+
 def create_db_instance(c, security_groups, tags, server_id):
     tags["service-role"] = "database"
     ec2_ids = launch_base_image(c, 1, security_groups, tags)

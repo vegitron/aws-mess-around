@@ -9,6 +9,7 @@ import subprocess
 def run_playbook_on_instances_by_ids(c, playbook, instance_ids, env={},
                                      data=None):
 
+    data_path = None
     ansible_cmd = "ansible-playbook -i '%s,' -u  ubuntu %s"
     if data:
         tmp_path = getattr(settings, "TEMP_PATH", "/tmp/")
