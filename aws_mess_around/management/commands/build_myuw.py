@@ -2,9 +2,13 @@ from aws_mess_around.util.aws import get_context
 from aws_mess_around.util.db import create_new_db_cluster, generate_password
 from aws_mess_around.util.db import add_database_to_host_id
 from aws_mess_around.util.db import add_user_to_database
+from aws_mess_around.util.proxy import create_proxy_instances
+from aws_mess_around.util.r53 import set_v4_ips_for_domain
 from aws_mess_around.models import BuildData
 from django.core.management.base import BaseCommand
 from django.conf import settings
+
+DEMO_DOMAIN = settings.AWS_DEMO_MYUW_DOMAIN
 
 
 class Command(BaseCommand):
@@ -21,6 +25,42 @@ class Command(BaseCommand):
                                                       "myuw",
                                                       "aws_mess_around")
         print "DB settings: ", db_settings
+
+        proxy_settings = get_proxy_config_for_project(c,
+                                                      "myuw",
+                                                      "aws_mess_around")
+
+        print "Proxy settings: ", proxy_settings
+
+
+def get_proxy_config_for_project(c, project, use):
+    existing_data = BuildData.objects.filter(project="myuw",
+                                             use="aws_mess_around")
+
+    proxy_instance_id = None
+    for data in existing_data:
+        if "proxy" == data.role and "instance_id" == data.data_field:
+            proxy_instance_id = data.value
+
+    if not proxy_instance_id:
+        tags = {"Project": "myuw",
+                "Use": "messing-around"}
+
+        my_security_group = settings.AWS_SECURITY_GROUP_NAME
+        new_ids = create_proxy_instances(c, DEMO_DOMAIN, 1,
+                                         [my_security_group], tags)
+
+        instance = get_instance(c, new_ids[0])
+        ip = instance.public_ip_address
+        set_v4_ips_for_domain(c, DEMO_DOMAIN, [ip])
+
+        BuildData.objects.get_or_create(project="myuw", use="aws_mess_around",
+                                        role="proxy", data_field="instance_id",
+                                        defaults={"value": new_ids[0]})
+
+        proxy_instance_id = new_ids[0]
+
+    return {"instance_id": proxy_instance_id}
 
 
 def get_database_config_for_project(c, project, use):
@@ -59,13 +99,7 @@ def get_database_config_for_project(c, project, use):
         add_user_to_database(c, "myuw_user", "%", myuw_password, "myuw",
                              data["master"]["id"], data["master"]["password"])
 
-        session = c["session"]
-        region_name = c["region_name"]
-
-        ec2_client = session.client('ec2')
-        ec2_region = session.resource('ec2', region_name=region_name)
-
-        instance = ec2_region.Instance(data["master"]["id"])
+        instance = get_instance(c, data["master"]["id"])
 
         ip_address = instance.private_ip_address
 
@@ -86,3 +120,15 @@ def get_database_config_for_project(c, project, use):
         db_pass = myuw_password
 
     return {"host": db_host, "username": db_user, "password": db_pass}
+
+
+def get_instance(c, iid):
+    session = c["session"]
+    region_name = c["region_name"]
+
+    ec2_client = session.client('ec2')
+    ec2_region = session.resource('ec2', region_name=region_name)
+
+    instance = ec2_region.Instance(iid)
+
+    return instance
