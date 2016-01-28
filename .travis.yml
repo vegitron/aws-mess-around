@@ -6,4 +6,4 @@ install:
   - pip install pep8
   - pip install -e .
 script:
-  - pep8 --exclude=migrations aws_mess_around/
+  - pep8 --exclude=migrations,playbooks aws_mess_around/

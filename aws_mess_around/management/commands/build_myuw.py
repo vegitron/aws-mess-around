@@ -66,34 +66,34 @@ class Command(BaseCommand):
                 "url(r'^', include('myuw.urls'))"
                 ]
 
+        secret_key = get_secret_key_for_project("myuw", "aws_mess_around")
         data = {"files_dir": settings.AWS_FILES_PATH,
                 "file_group": "ubuntu",
                 "webservice_client_cert_name": "myuw-uwca.cert",
                 "webservice_client_key_name": "myuw-uwca.key",
-#                "build_number": get_next_build_for_project("myuw"),
+                # "build_number": get_next_build_for_project("myuw"),
                 "build_number": 8,
                 "git_repository": "https://github.com/uw-it-aca/myuw.git",
                 "git_version": "master",
-                "pip_requirements_files": [ "requirements.txt" ],
+                "pip_requirements_files": ["requirements.txt"],
                 "project_url_definitions": urls,
                 "database_name": "myuw",
                 "database_user": db_settings["username"],
                 "database_password": db_settings["password"],
                 "database_host": db_settings["host"],
-                "allowed_hosts": [ DEMO_DOMAIN ],
-                "secret_key": get_secret_key_for_project("myuw", "aws_mess_around"),
-#                "restclients": { "production": [ "sws", "gws" ]},
+                "allowed_hosts": [DEMO_DOMAIN],
+                "secret_key": secret_key,
                 "digitlib_client_redirect": False,
                 "canvas_client_oauth_bearer": "XXX - SECRET!!",
-                "restclients": { "test": [],
-                                 "production": ["gws", "sws", "pws", "hfs",
-                                                "book", "uwnetid",
-                                                "canvas",
-                                                "libraries", "trumba_calendar",
-                                                "digit_lib",
-                                                "iasystem",
-                                                "grad"],
-                                 },
+                "restclients": {"test": [],
+                                "production": ["gws", "sws", "pws", "hfs",
+                                               "book", "uwnetid",
+                                               "canvas",
+                                               "libraries", "trumba_calendar",
+                                               "digit_lib",
+                                               "iasystem",
+                                               "grad"],
+                                },
 
                 }
         run_playbook_on_instances_by_ids(c,
@@ -110,7 +110,7 @@ class Command(BaseCommand):
 
         print "IP: ", instance.public_ip_address
 
-        #register_sp(DEMO_DOMAIN)
+        # register_sp(DEMO_DOMAIN)
 
 
 def cleanup_all(c):
@@ -167,6 +167,7 @@ def get_secret_key_for_project(project, use):
                                     defaults={"value": secret_key})
 
     return secret_key
+
 
 def get_database_config_for_project(c, project, use):
     existing_data = BuildData.objects.filter(project=project,
