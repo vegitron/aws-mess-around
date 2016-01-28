@@ -1,0 +1,4 @@
+RESTCLIENTS_GRAD_DAO_CLASS = 'restclients.dao_implementation.grad.Live'
+RESTCLIENTS_GRAD_HOST = '{% if "grad" in restclients.production|default(False) %}https://apps.grad.uw.edu:443{% else %}https://webtest.grad.uw.edu:443{% endif %}'
+RESTCLIENTS_GRAD_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_GRAD_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'

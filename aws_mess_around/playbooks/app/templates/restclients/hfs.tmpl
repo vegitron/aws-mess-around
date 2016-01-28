@@ -1,0 +1,4 @@
+RESTCLIENTS_HFS_DAO_CLASS = 'restclients.dao_implementation.hfs.Live'
+RESTCLIENTS_HFS_HOST = '{% if "hfs" in restclients.production|default(False) %}https://api.hfs.washington.edu:443{% else %}https://tapi.hfs.washington.edu:443{% endif %}'
+RESTCLIENTS_HFS_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_HFS_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'

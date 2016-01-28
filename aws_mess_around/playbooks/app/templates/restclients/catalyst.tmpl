@@ -1,0 +1,9 @@
+RESTCLIENTS_CATALYST_DAO_CLASS='restclients.dao_implementation.catalyst.Live'
+RESTCLIENTS_CATALYST_HOST='{% if "catalyst" in restclients.production|default(False) %}https://catalyst.uw.edu{% else %}https://cat-dev-tools11.s.uw.edu{% endif %}'
+{% if catalyst_client_private_key|default(None) %}
+RESTCLIENTS_CATALYST_SOL_AUTH_PUBLIC_KEY='{{ catalyst_client_public_key }}'
+RESTCLIENTS_CATALYST_SOL_AUTH_PRIVATE_KEY='{{ catalyst_client_private_key }}'
+{% else %}
+RESTCLIENTS_CATALYST_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_CATALYST_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'
+{% endif %}

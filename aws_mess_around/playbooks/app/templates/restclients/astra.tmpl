@@ -1,0 +1,5 @@
+ASTRA_WSDL='https://{% if "astra" in restclients.production|default(False) %}astra.admin.uw.edu{% else %}eval-astra.admin.uw.edu{% endif %}/astraws/v2/default.asmx?wsdl'
+ASTRA_CERT='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+ASTRA_KEY='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'
+ASTRA_APPLICATION='{{ astra_application }}'
+ASTRA_ENVIRONMENT='{% if "astra" in restclients.production|default(False) %}PROD{% else %}EVAL{% endif %}'

@@ -11,3 +11,7 @@ class BuildData(models.Model):
 
     class Meta:
         unique_together = (("project", "use", "role", "data_field",),)
+
+
+class ProjectBuildNumber(models.Model):
+    project = models.CharField(max_length=200, db_index=True)

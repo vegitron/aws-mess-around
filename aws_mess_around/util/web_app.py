@@ -2,8 +2,14 @@ from django.conf import settings
 from aws_mess_around.util.ec2 import launch_base_image, launch_ami
 from aws_mess_around.util.ec2 import create_ami_from_instance
 from aws_mess_around.util.ansible import run_playbook_on_instances_by_ids
+from aws_mess_around.models import ProjectBuildNumber
 
 MY_AMI_NAME = getattr(settings, "AWS_CUSTOM_AMI_NAME", "pmichaud test image")
+
+
+def get_next_build_for_project(project):
+    build = ProjectBuildNumber.objects.create(project=project)
+    return build.pk
 
 
 def create_webapp_instances(c, count, domain, security_groups, tags):

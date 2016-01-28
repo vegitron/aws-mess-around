@@ -1,0 +1,5 @@
+RESTCLIENTS_KWS_DAO_CLASS = 'restclients.dao_implementation.kws.Live'
+RESTCLIENTS_KWS_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_KWS_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'
+RESTCLIENTS_KWS_HOST='{% if "kws" in restclients.production|default(False) %}https://ws.admin.washington.edu:443{% else %}https://wseval.s.uw.edu:443{% endif %}'
+RESTCLIENTS_KWS_MAX_POOL_SIZE={{ kws_max_pool_size|default(5) }}

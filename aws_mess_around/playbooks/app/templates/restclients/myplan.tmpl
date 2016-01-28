@@ -1,0 +1,4 @@
+RESTCLIENTS_MYPLAN_DAO_CLASS = 'restclients.dao_implementation.myplan.Live'
+RESTCLIENTS_MYPLAN_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_MYPLAN_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'
+RESTCLIENTS_MYPLAN_HOST='{% if "myplan" in restclients.production|default(False) %}{% else %}https://uwkseval.cac.washington.edu:443{% endif %}'

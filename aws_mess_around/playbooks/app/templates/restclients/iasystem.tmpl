@@ -1,0 +1,6 @@
+RESTCLIENTS_IASYSTEM_DAO_CLASS = 'restclients.dao_implementation.iasystem.Live'
+RESTCLIENTS_IASYSTEM_HOST = 'https://[subdomain].iasystem.org:443'
+RESTCLIENTS_IASYSTEM_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_IASYSTEM_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'
+RESTCLIENTS_IASYSTEM_MAX_POOL_SIZE={{ iasystem_max_pool_size|default(5) }}
+RESTCLIENTS_IASYSTEM_SOCKET_TIMEOUT={{ iasystem_socket_timeout|default(5) }}

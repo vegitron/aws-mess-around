@@ -1,0 +1,13 @@
+{% if "canvas" in restclients.test|default(False) %}
+RESTCLIENTS_CA_BUNDLE = '{{ base_dir }}/certs/ca-bundle.crt'
+{% endif %}
+RESTCLIENTS_CANVAS_DAO_CLASS='restclients.dao_implementation.canvas.Live'
+RESTCLIENTS_CANVAS_HOST='{% if "canvas" in restclients.production|default(False) %}https://canvas.uw.edu{% else %}https://uw.test.instructure.com{% endif %}'
+RESTCLIENTS_CANVAS_OAUTH_BEARER='{{ canvas_client_oauth_bearer }}'
+{% if canvas_client_account_id|default(None) %}
+RESTCLIENTS_CANVAS_ACCOUNT_ID='{{ canvas_client_account_id }}'
+{% endif %}
+{% if canvas_client_timeout|default(None) %}
+RESTCLIENTS_CANVAS_SOCKET_TIMEOUT={{ canvas_client_timeout }}
+{% endif %}
+

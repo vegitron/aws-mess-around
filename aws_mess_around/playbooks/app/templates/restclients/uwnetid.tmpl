@@ -1,0 +1,4 @@
+RESTCLIENTS_UWNETID_DAO_CLASS = 'restclients.dao_implementation.uwnetid.Live'
+RESTCLIENTS_UWNETID_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_UWNETID_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'
+RESTCLIENTS_UWNETID_HOST='https://uwnetid.washington.edu:443'

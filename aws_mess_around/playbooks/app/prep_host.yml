@@ -1,21 +1,87 @@
 - hosts: all
-  sudo: yes
+  vars:
+    base_dir: "/data/"
 
   tasks:
-    - name: Create our groups/membership
-      group: name=logwriters state=present
-    - user: name=ubuntu groups=logwriters append=yes
-    - user: name=www-data groups=logwriters append=yes
+#    - name: update apt
+#      apt: update_cache=yes
+#      sudo: yes
+#
+#    - name: Install the packages needed for app deployment
+#      apt: name=git state=latest
+#      sudo: yes
+#
+#    - apt: name=python-virtualenv state=latest
+#      sudo: yes
+#
+#    - apt: name=python-dev state=latest
+#      sudo: yes
+#
+#    - apt: name=libxml2-dev state=latest
+#      sudo: yes
+#
+#    - apt: name=libxslt1-dev state=latest
+#      sudo: yes
+#
+#    - apt: name=zlib1g-dev state=latest
+#      sudo: yes
+#
+#    - name: Create our groups/membership
+#      group: name=logwriters state=present
+#    - user: name=ubuntu groups=logwriters append=yes
+#    - user: name=www-data groups=logwriters append=yes
+#
+#    - name: Create our directory structure
+#      file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/"
+#      sudo: yes
+#
+#    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/app/"
+#    # This isn't really necessary, but it makes it easy when testing the deployment process multiple times on a host
+#    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/app/{{ build_number }}"
+#    - file: owner="ubuntu" group=logwriters mode="2775" state="directory" path="/data/logs/"
+#    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/statics/"
+#    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/statics/{{ build_number }}"
+#    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/certs/"
+#
+#    - copy: src="{{ files_dir }}/certs/ca-bundle.crt" dest="/data/certs/ca-bundle.crt" group="{{ file_group }}"
+#    - copy: src="{{ files_dir }}/certs/{{ webservice_client_cert_name }}" dest="/data/certs/{{ webservice_client_cert_name }}" group="{{ file_group }}"
+#      when: webservice_client_cert_name != "" and webservice_client_cert_name is defined
+#    - copy: src="{{ files_dir }}/certs/{{ webservice_client_key_name }}" dest="/data/certs/{{ webservice_client_key_name }}" group="{{ file_group }}"
+#      when: webservice_client_key_name != "" and webservice_client_key_name is defined
+#
+#    - git: repo={{git_repository}} dest=/data/app/{{ build_number }} version={{git_version}}
+#
+#    # This is from the post-checkout playbook
+#    - name: Create a virtualenv for the build
+#      command: virtualenv -p {{ python_interpreter|default('python2.7') }} /data/app//{{ build_number }}
+#
+#    - name: Copy over requirements for the project level
+#      copy: src="{{ files_dir }}/project_requirements.txt" dest="/data/app/project_requirements.txt" mode="0664"
+#
+#    - name: Install the PermissionsLogging module - needed to make sure our logs are group-writable
+#      pip: virtualenv="/data/app/{{ build_number }}" requirements="/data/app/project_requirements.txt"
+#
+#    - name: Perform upgrades with pip.  May (but should not) take a while
+#      pip: virtualenv="/data/app/{{ build_number }}" requirements="/data/app/{{ build_number }}/{{ item }}" extra_args="-U"
+#      with_items: pip_upgrades_files
+#      when: pip_upgrades_files is defined
+#
+#    - name: Install requirements with pip.  May (probably will) take a while
+#      pip: virtualenv="/data/app/{{ build_number }}" requirements="/data/app/{{ build_number }}/{{ item }}"
+#      with_items: pip_requirements_files
+#
+#    - name: Create project directory
+#      file: group="{{ file_group }}" mode="2775" state="directory" path="/data/app/{{ build_number }}/project"
+#
+    - name: Create the project settings file
+      template: src="templates/project_settings.py" dest="/data/app/{{ build_number }}/project/settings.py" group="{{ file_group }}" mode="664"
 
-    - name: Create our directory structure
-      file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/"
-    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/app/"
-    - file: owner="ubuntu" group=logwriters mode="2775" state="directory" path="/data/logs/"
-    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/statics/"
-    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/certs/"
+    - name: Create the project urls file
+      template: src="templates/project_urls.py" dest="/data/app/{{ build_number }}/project/urls.py" group="{{ file_group }}" mode="644"
 
-    - copy: src="{{ files_dir }}/certs/ca-bundle.crt" dest="/data/certs/ca-bundle.crt" group="{{ file_group }}"
-    - copy: src="{{ files_dir }}/certs/{{ webservice_client_cert_name }}" dest="/data/certs/{{ webservice_client_cert_name }}" group="{{ file_group }}"
-      when: webservice_client_cert_name != "" and webservice_client_cert_name is defined
-    - copy: src="{{ files_dir }}/certs/{{ webservice_client_key_name }}" dest="/data/certs/{{ webservice_client_key_name }}" group="{{ file_group }}"
-      when: webservice_client_key_name != "" and webservice_client_key_name is defined
+    - name: Create the __init__ file
+      command: touch "/data/app/{{ build_number }}/project/__init__.py" creates="/data/app/{{ build_number }}/project/__init__.py"
+
+    - name: Create manage.py file
+      template: src="templates/manage.py" dest="/data/app/{{ build_number }}/manage.py" group="{{ file_group }}" mode="644"
+

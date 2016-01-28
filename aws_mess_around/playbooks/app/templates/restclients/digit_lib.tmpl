@@ -1,0 +1,5 @@
+RESTCLIENTS_DIGITLIB_DAO_CLASS = 'restclients.dao_implementation.digitlib.Live'
+RESTCLIENTS_DIGITLIB_HOST = 'https://digital.lib.washington.edu:443'
+RESTCLIENTS_DIGITLIB_REDIRECT={{ digitlib_client_redirect }}
+RESTCLIENTS_DIGITLIB_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_DIGITLIB_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'

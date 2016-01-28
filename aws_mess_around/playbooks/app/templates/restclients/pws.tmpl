@@ -1,0 +1,5 @@
+RESTCLIENTS_PWS_DAO_CLASS = 'restclients.dao_implementation.pws.Live'
+RESTCLIENTS_PWS_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_PWS_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'
+RESTCLIENTS_PWS_HOST='{% if "pws" in restclients.production|default(False) %}https://ws.admin.washington.edu:443{% else %}https://wseval.s.uw.edu:443{% endif %}'
+RESTCLIENTS_PWS_MAX_POOL_SIZE={{ pws_max_pool_size|default(5) }}

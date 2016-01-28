@@ -1,0 +1,5 @@
+RESTCLIENTS_GWS_DAO_CLASS = 'restclients.dao_implementation.gws.Live'
+RESTCLIENTS_GWS_CERT_FILE='{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+RESTCLIENTS_GWS_KEY_FILE='{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'
+RESTCLIENTS_GWS_HOST='{% if "gws" in restclients.production|default(False) %}https://iam-ws.u.washington.edu:7443{% else %}https://eval.groups.uw.edu:443{% endif %}'
+RESTCLIENTS_GWS_MAX_POOL_SIZE={{ gws_max_pool_size|default(5) }}
