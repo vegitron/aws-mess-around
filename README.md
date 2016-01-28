@@ -18,3 +18,6 @@ This will probably be deprecated/replaced soon, but it should be something like 
 
 This is the name of your ssh key, as managed at https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#KeyPairs:sort=keyName
 
+  AWS_FILES_PATH
+
+This is a path on your local machine that has host-specific data, like x509 certs.

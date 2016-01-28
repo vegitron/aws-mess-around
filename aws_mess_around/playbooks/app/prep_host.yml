@@ -1,0 +1,21 @@
+- hosts: all
+  sudo: yes
+
+  tasks:
+    - name: Create our groups/membership
+      group: name=logwriters state=present
+    - user: name=ubuntu groups=logwriters append=yes
+    - user: name=www-data groups=logwriters append=yes
+
+    - name: Create our directory structure
+      file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/"
+    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/app/"
+    - file: owner="ubuntu" group=logwriters mode="2775" state="directory" path="/data/logs/"
+    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/statics/"
+    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/certs/"
+
+    - copy: src="{{ files_dir }}/certs/ca-bundle.crt" dest="/data/certs/ca-bundle.crt" group="{{ file_group }}"
+    - copy: src="{{ files_dir }}/certs/{{ webservice_client_cert_name }}" dest="/data/certs/{{ webservice_client_cert_name }}" group="{{ file_group }}"
+      when: webservice_client_cert_name != "" and webservice_client_cert_name is defined
+    - copy: src="{{ files_dir }}/certs/{{ webservice_client_key_name }}" dest="/data/certs/{{ webservice_client_key_name }}" group="{{ file_group }}"
+      when: webservice_client_key_name != "" and webservice_client_key_name is defined

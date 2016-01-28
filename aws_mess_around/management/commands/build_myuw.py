@@ -1,9 +1,14 @@
+from aws_mess_around.management.commands import take_down_ec2
 from aws_mess_around.util.aws import get_context
+from aws_mess_around.util.web_app import create_webapp_instances
 from aws_mess_around.util.db import create_new_db_cluster, generate_password
 from aws_mess_around.util.db import add_database_to_host_id
 from aws_mess_around.util.db import add_user_to_database
+from aws_mess_around.util.ansible import run_playbook_on_instances_by_ids
 from aws_mess_around.util.proxy import create_proxy_instances
+from aws_mess_around.util.proxy import set_app_servers_for_proxies_by_id
 from aws_mess_around.util.r53 import set_v4_ips_for_domain
+from aws_mess_around.util.shib import register_sp
 from aws_mess_around.models import BuildData
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -21,16 +26,63 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         c = get_context()
+        if False:
+            cleanup_all(c)
+
+        # Find or create a DB cluster to use.
         db_settings = get_database_config_for_project(c,
                                                       "myuw",
                                                       "aws_mess_around")
         print "DB settings: ", db_settings
 
+        # Find or create the proxies the app servers will live behind.
         proxy_settings = get_proxy_config_for_project(c,
                                                       "myuw",
                                                       "aws_mess_around")
 
         print "Proxy settings: ", proxy_settings
+
+        # Get a base image to do build a MyUW AMI off of
+        my_security_group = settings.AWS_SECURITY_GROUP_NAME
+        tags = {"Project": "myuw",
+                "Use": "messing-around"}
+
+        # instance_ids = create_webapp_instances(c, 1, DEMO_DOMAIN,
+        #                                        [my_security_group], tags)
+
+        # instance_id = instance_ids[0]
+        instance_id = 'i-d7d3370f'
+
+        print "Our base instance ID: ", instance_id
+
+        # Get the host ready to be a MyUW app server
+        playbook = "aws_mess_around/playbooks/app/prep_host.yml"
+
+        data = {"files_dir": settings.AWS_FILES_PATH,
+                "file_group": "ubuntu",
+                "webservice_client_cert_name": "myuw-uwca.cert",
+                "webservice_client_key_name": "myuw-uwca.key",
+                }
+        run_playbook_on_instances_by_ids(c,
+                                         playbook,
+                                         [instance_id],
+                                         data=data)
+
+        # Add our instances to the proxy
+        proxy_ids = [proxy_settings["instance_id"]]
+        set_app_servers_for_proxies_by_id(c, DEMO_DOMAIN, proxy_ids,
+                                          [instance_id])
+
+        instance = get_instance(c, instance_id)
+
+        print "IP: ", instance.public_ip_address
+
+        register_sp(DEMO_DOMAIN)
+
+
+def cleanup_all(c):
+    BuildData.objects.all().delete()
+    take_down_ec2(c)
 
 
 def get_proxy_config_for_project(c, project, use):
