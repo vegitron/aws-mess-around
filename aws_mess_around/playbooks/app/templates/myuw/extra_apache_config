@@ -1,0 +1,6 @@
+
+WSGIDaemonProcess site-1 user=acahttp group=acadev_logs processes=4 threads=10
+WSGIProcessGroup site-1
+
+MaxClients 40
+

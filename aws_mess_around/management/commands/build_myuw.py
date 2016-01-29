@@ -66,7 +66,10 @@ class Command(BaseCommand):
                 "url(r'^', include('myuw.urls'))"
                 ]
 
+        # XXX - this should change when the memcached work is implemented.
+        cache = "myuw.util.cache_implementation.MyUWCache"
         secret_key = get_secret_key_for_project("myuw", "aws_mess_around")
+        extra_settings = "templates/myuw/project_settings.py"
         data = {"files_dir": settings.AWS_FILES_PATH,
                 "file_group": "ubuntu",
                 "webservice_client_cert_name": "myuw-uwca.cert",
@@ -85,6 +88,11 @@ class Command(BaseCommand):
                 "secret_key": secret_key,
                 "digitlib_client_redirect": False,
                 "canvas_client_oauth_bearer": "XXX - SECRET!!",
+                "ga_tracker_key": "XXX - SECRET!!",
+                "userservice_admin_group": "u_pmichaud_myuwdevtesters",
+                "restclients_admin_group": "u_pmichaud_myuwdevtesters",
+                "restclients_dao_cache_class": cache,
+                "project_settings_template": extra_settings,
                 "restclients": {"test": [],
                                 "production": ["gws", "sws", "pws", "hfs",
                                                "book", "uwnetid",
