@@ -11,14 +11,17 @@
 #      apt: name=git state=latest
 #      sudo: yes
 #
+    - apt: name=libmysqlclient-dev state=latest
+      sudo: yes
+
 #    - apt: name=python-virtualenv state=latest
 #      sudo: yes
-
-    - apt: name=nodejs state=latest
-      sudo: yes
-
-    - apt: name=npm state=latest
-      sudo: yes
+#
+#    - apt: name=nodejs state=latest
+#      sudo: yes
+#
+#    - apt: name=npm state=latest
+#      sudo: yes
 #
 #    - apt: name=python-dev state=latest
 #      sudo: yes
@@ -31,13 +34,13 @@
 #
 #    - apt: name=zlib1g-dev state=latest
 #      sudo: yes
-
-    # Ubuntu installs node.js as nodejs, not node :(
-    - file: src=/usr/bin/nodejs dest=/usr/bin/node state="link" force="yes"
-      sudo: yes
-
-    - npm: name=less global=yes
-      sudo: yes
+#
+#    # Ubuntu installs node.js as nodejs, not node :(
+#    - file: src=/usr/bin/nodejs dest=/usr/bin/node state="link" force="yes"
+#      sudo: yes
+#
+#    - npm: name=less global=yes
+#      sudo: yes
 #
 #    - name: Create our groups/membership
 #      group: name=logwriters state=present
@@ -68,11 +71,11 @@
 #    - name: Create a virtualenv for the build
 #      command: virtualenv -p {{ python_interpreter|default('python2.7') }} /data/app//{{ build_number }}
 #
-    - name: Copy over requirements for the project level
-      copy: src="{{ files_dir }}/project_requirements.txt" dest="/data/app/project_requirements.txt" mode="0664"
-
-    - name: Install the PermissionsLogging module - needed to make sure our logs are group-writable
-      pip: virtualenv="/data/app/{{ build_number }}" requirements="/data/app/project_requirements.txt"
+#    - name: Copy over requirements for the project level
+#      copy: src="{{ files_dir }}/project_requirements.txt" dest="/data/app/project_requirements.txt" mode="0664"
+#
+#    - name: Install the PermissionsLogging module - needed to make sure our logs are group-writable
+#      pip: virtualenv="/data/app/{{ build_number }}" requirements="/data/app/project_requirements.txt"
 #
 #    - name: Perform upgrades with pip.  May (but should not) take a while
 #      pip: virtualenv="/data/app/{{ build_number }}" requirements="/data/app/{{ build_number }}/{{ item }}" extra_args="-U"
@@ -86,30 +89,49 @@
 #    - name: Create project directory
 #      file: group="{{ file_group }}" mode="2775" state="directory" path="/data/app/{{ build_number }}/project"
 #
-    - name: Create the project settings file
-      template: src="templates/project_settings.py" dest="/data/app/{{ build_number }}/project/settings.py" group="{{ file_group }}" mode="664"
-
-    - name: Create the project urls file
-      template: src="templates/project_urls.py" dest="/data/app/{{ build_number }}/project/urls.py" group="{{ file_group }}" mode="644"
-
-    - name: Create the __init__ file
-      command: touch "/data/app/{{ build_number }}/project/__init__.py" creates="/data/app/{{ build_number }}/project/__init__.py"
-
-    - name: Create manage.py file
-      template: src="templates/manage.py" dest="/data/app/{{ build_number }}/manage.py" group="{{ file_group }}" mode="644"
-
+#    - name: Create the project settings file
+#      template: src="templates/project_settings.py" dest="/data/app/{{ build_number }}/project/settings.py" group="{{ file_group }}" mode="664"
+#
+#    - name: Create the project urls file
+#      template: src="templates/project_urls.py" dest="/data/app/{{ build_number }}/project/urls.py" group="{{ file_group }}" mode="644"
+#
+#    - name: Create the __init__ file
+#      command: touch "/data/app/{{ build_number }}/project/__init__.py" creates="/data/app/{{ build_number }}/project/__init__.py"
+#
+#    - name: Create manage.py file
+#      template: src="templates/manage.py" dest="/data/app/{{ build_number }}/manage.py" group="{{ file_group }}" mode="644"
+#
 #    - name: Create the apache config file
 #      template: src="{{ apache_config_template|default('templates/apache_config') }}" dest="{{ base_dir }}/builds/{{current_build_value}}/apache_config/apache-global" group="{{ file_group }}" mode="664"
+#
+#    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/wsgi/"
+#    - name: Copy the wsgi file
+#      template: src="templates/django.wsgi" group="{{ file_group }}" dest="/data/wsgi/django.wsgi" mode="664"
+#
+#    # Moving these further down, so the rest of the basics will be in place - makes it so i can restart apache by hand and get current config - useful for log permissions issues
+#    - name: Collect statics
+#      django_manage: virtualenv="/data/app/{{ build_number }}" app_path="/data/app/{{ build_number }}" command="collectstatic"
+#
+#    - name: Compress statics
+#      django_manage: virtualenv="/data/app/{{ build_number }}" app_path="/data/app/{{ build_number }}" command="compress"
+#      when: skip_compress_statics is not defined or not skip_compress_statics
 
-    - file: owner="ubuntu" group=ubuntu mode="2775" state="directory" path="/data/wsgi/"
-    - name: Copy the wsgi file
-      template: src="templates/django.wsgi" group="{{ file_group }}" dest="/data/wsgi/django.wsgi" mode="664"
+    - name: Install the mysql interface into our virtualenv
+      pip: virtualenv="/data/app/{{ build_number }}" name="MySQL-python"
 
-    # Moving these further down, so the rest of the basics will be in place - makes it so i can restart apache by hand and get current config - useful for log permissions issues
-    - name: Collect statics
-      django_manage: virtualenv="/data/app/{{ build_number }}" app_path="/data/app/{{ build_number }}" command="collectstatic"
+    # XXX - these should be moved out to a deployment step!
+    - name: syncdb
+      django_manage: virtualenv="/data/app/{{ build_number }}" app_path="/data/app/{{ build_number }}" command="syncdb"
 
-    - name: Compress statics
-      django_manage: virtualenv="/data/app/{{ build_number }}" app_path="/data/app/{{ build_number }}" command="compress"
-      when: skip_compress_statics is not defined or not skip_compress_statics
+    - name: migrate
+      django_manage: virtualenv="/data/app/{{ build_number }}" app_path="/data/app/{{ build_number }}" command="migrate {{ item }}"
+      with_items: migrate_apps
+      when: migrate_apps
 
+    - name: updated apache config
+      template: src="templates/apache/full_apache_config.conf" dest="/etc/apache2/sites-available/custom-apache-config.conf"
+      sudo: yes
+
+    - name: Restarting Apache
+      service: name=apache2 state=restarted
+      sudo: yes

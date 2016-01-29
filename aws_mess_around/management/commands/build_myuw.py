@@ -93,6 +93,8 @@ class Command(BaseCommand):
                 "restclients_admin_group": "u_pmichaud_myuwdevtesters",
                 "restclients_dao_cache_class": cache,
                 "project_settings_template": extra_settings,
+                "migrate_apps": ["myuw"],
+                "shib_required_url": "/",
                 "restclients": {"test": [],
                                 "production": ["gws", "sws", "pws", "hfs",
                                                "book", "uwnetid",
