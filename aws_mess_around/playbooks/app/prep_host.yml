@@ -116,6 +116,10 @@
 #      django_manage: virtualenv="/data/app/{{ build_number }}" app_path="/data/app/{{ build_number }}" command="compress"
 #      when: skip_compress_statics is not defined or not skip_compress_statics
 
+    - name: copy arbitrary files over
+      copy: src="{{ files_dir }}/{{ item.src }}" dest={{ item.dest }}
+      with_items: custom_files|default([])
+
     - name: Install the mysql interface into our virtualenv
       pip: virtualenv="/data/app/{{ build_number }}" name="MySQL-python"
 
