@@ -7,10 +7,13 @@ import subprocess
 
 
 def run_playbook_on_instances_by_ids(c, playbook, instance_ids, env={},
-                                     data=None):
+                                     data=None, vars_file=None):
 
     data_path = None
     ansible_cmd = "ansible-playbook -i '%s,' -u  ubuntu %s"
+
+    ansible_files_path = getattr(settings, "AWS_FILES_PATH",
+                                 "~/ansible/aca-aws-files")
     if data:
         tmp_path = getattr(settings, "TEMP_PATH", "/tmp/")
 
@@ -26,8 +29,10 @@ def run_playbook_on_instances_by_ids(c, playbook, instance_ids, env={},
 
         ansible_cmd += " --extra-vars @%s" % data_path
 
-    ansible_files_path = getattr(settings, "AWS_DEPLOY_ANSIBLE_FILES_PATH",
-                                 "~/ansible/aca-aws-files")
+    if vars_file:
+        full_path = os.path.join(ansible_files_path, vars_file)
+        ansible_cmd += " --extra-vars @%s" % full_path
+
     insecure_env = dict(os.environ,
                         ANSIBLE_HOST_KEY_CHECKING='False',
                         ANSIBLE_FILES=ansible_files_path,

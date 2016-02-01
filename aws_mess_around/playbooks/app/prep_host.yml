@@ -89,8 +89,8 @@
 #    - name: Create project directory
 #      file: group="{{ file_group }}" mode="2775" state="directory" path="/data/app/{{ build_number }}/project"
 #
-#    - name: Create the project settings file
-#      template: src="templates/project_settings.py" dest="/data/app/{{ build_number }}/project/settings.py" group="{{ file_group }}" mode="664"
+    - name: Create the project settings file
+      template: src="templates/project_settings.py" dest="/data/app/{{ build_number }}/project/settings.py" group="{{ file_group }}" mode="664"
 #
 #    - name: Create the project urls file
 #      template: src="templates/project_urls.py" dest="/data/app/{{ build_number }}/project/urls.py" group="{{ file_group }}" mode="644"

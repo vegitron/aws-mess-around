@@ -87,8 +87,6 @@ class Command(BaseCommand):
                 "allowed_hosts": [DEMO_DOMAIN],
                 "secret_key": secret_key,
                 "digitlib_client_redirect": False,
-                "canvas_client_oauth_bearer": "XXX - SECRET!!",
-                "ga_tracker_key": "XXX - SECRET!!",
                 "userservice_admin_group": "u_pmichaud_myuwdevtesters",
                 "restclients_admin_group": "u_pmichaud_myuwdevtesters",
                 "restclients_dao_cache_class": cache,
@@ -109,7 +107,8 @@ class Command(BaseCommand):
         run_playbook_on_instances_by_ids(c,
                                          playbook,
                                          [instance_id],
-                                         data=data)
+                                         data=data,
+                                         vars_file="aws/myuw/production.json")
 
         # Add our instances to the proxy
         proxy_ids = [proxy_settings["instance_id"]]
