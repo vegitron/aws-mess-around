@@ -101,7 +101,8 @@ LOGGING = {
 }
 
 
-USERSERVICE_VALIDATION_MODULE = "myuw.userservice_validation.validate"
+USERSERVICE_VALIDATION_MODULE = "myuw.userservice_validation.validate_shib"
+USERSERVICE_TRANSFORMATION_MODULE = "myuw.userservice_validation.transform"
 USERSERVICE_ADMIN_GROUP='{{ userservice_admin_group }}'
 RESTCLIENTS_ADMIN_GROUP='{{ restclients_admin_group }}'
 RESTCLIENTS_DAO_CACHE_CLASS='{{restclients_dao_cache_class}}'
@@ -150,3 +151,15 @@ MYUW_USER_SERVLET_URL = "{{ myuw_legacy_url }}"
 MYUW_MANDATORY_SWITCH_PATH = "{{ myuw_fyp_list_path }}"
 MYUW_OPTIN_SWITCH_PATH = "{{ myuw_optin_list_path }}"
 {% endif %}
+
+
+# A bunch of stuff for on-campus proxying
+RESTCLIENTS_BOOK_DAO_CLASS = 'restclients.dao_implementation.book.Live'
+RESTCLIENTS_BOOKSTORE_HOST = "https://aca-onsite.s.uw.edu"
+RESTCLIENTS_BOOKSTORE_PREFIX = "/bookstore/"
+RESTCLIENTS_BOOKSTORE_KEY = '{% if webservice_client_key_path|default(None) %}{{ webservice_client_key_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_key_name }}{% endif %}'
+
+RESTCLIENTS_BOOKSTORE_CERT  = '{% if webservice_client_cert_path|default(None) %}{{ webservice_client_cert_path }}{% else %}{{ base_dir }}/certs/{{ webservice_client_cert_name }}{% endif %}'
+
+RESTCLIENTS_LIBRARIES_HOST = "https://aca-onsite.s.uw.edu"
+RESTCLIENTS_LIBRARIES_PREFIX = "/library/"

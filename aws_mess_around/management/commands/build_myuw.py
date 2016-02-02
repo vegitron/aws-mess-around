@@ -77,7 +77,7 @@ class Command(BaseCommand):
                 # "build_number": get_next_build_for_project("myuw"),
                 "build_number": 8,
                 "git_repository": "https://github.com/uw-it-aca/myuw.git",
-                "git_version": "master",
+                "git_version": "feature/aws-shibboleth",
                 "pip_requirements_files": ["requirements.txt"],
                 "project_url_definitions": urls,
                 "database_name": "myuw",
