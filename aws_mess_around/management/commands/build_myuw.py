@@ -47,7 +47,9 @@ class Command(BaseCommand):
         # Get a base image to do build a MyUW AMI off of
         my_security_group = settings.AWS_SECURITY_GROUP_NAME
         tags = {"Project": "myuw",
-                "Use": "messing-around"}
+                "Use": "messing-around",
+                "ResponsibleParty": settings.AWS_RESPONSIBLE_PARTY,
+                }
 
         # instance_ids = create_webapp_instances(c, 1, DEMO_DOMAIN,
         #                                        [my_security_group], tags)
@@ -138,7 +140,8 @@ def get_proxy_config_for_project(c, project, use):
 
     if not proxy_instance_id:
         tags = {"Project": "myuw",
-                "Use": "messing-around"}
+                "Use": "messing-around",
+                "ResponsibleParty": settings.AWS_RESPONSIBLE_PARTY}
 
         my_security_group = settings.AWS_SECURITY_GROUP_NAME
         new_ids = create_proxy_instances(c, DEMO_DOMAIN, 1,
@@ -197,6 +200,7 @@ def get_database_config_for_project(c, project, use):
     if not db_host or not db_user or not db_pass:
         tags = {"Project": project,
                 "Use": use,
+                "ResponsibleParty": settings.AWS_RESPONSIBLE_PARTY,
                 }
 
         my_security_group = settings.AWS_SECURITY_GROUP_NAME

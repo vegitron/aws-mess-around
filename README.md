@@ -10,9 +10,13 @@ You'll need some configuration in your settings:
 
 Get those settings by creating a user for yourself: https://console.aws.amazon.com/iam/home?region=us-west-2#users
 
+  AWS_RESPONSIBLE_PARTY
+
+This is the value for the tag "ResponsibleParty".  It is used to track who owns test instances, so our test scripts only bring down your instances.  The value should be something like your Netid.
+
   AWS_SECURITY_GROUP_NAME
 
-This will probably be deprecated/replaced soon, but it should be something like { your netid }_testing_security_group.
+This will probably be replaced soon, with centrally managed security groups for different instance types.  For now, just use something like { your netid }_testing_security_group
 
   AWS_KEY_NAME
 

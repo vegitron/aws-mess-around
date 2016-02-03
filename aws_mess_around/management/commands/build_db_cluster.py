@@ -14,6 +14,7 @@ class Command(BaseCommand):
 
         tags = {"Project": "aws-initial-testing",
                 "Use": "messing-around",
+                "ResponsibleParty": settings.AWS_RESPONSIBLE_PARTY,
                 }
 
         my_security_group = settings.AWS_SECURITY_GROUP_NAME

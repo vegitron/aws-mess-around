@@ -52,7 +52,8 @@ def launch_ec2(c):
         print "Error managing security group: ", ex
 
     tags = {"Project": "aws-initial-testing",
-            "Use": "messing-around"}
+            "Use": "messing-around",
+            "ResponsibleParty": settings.AWS_RESPONSIBLE_PARTY}
 
     instance_ids = create_webapp_instances(c, 2, NEW_DOMAIN_NAME,
                                            [my_security_group], tags)
